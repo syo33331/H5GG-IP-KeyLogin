@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>キー生成</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            padding: 50px;
+        }
+        #generateButton {
+            background-color: #1E88E5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        #key {
+            margin-top: 20px;
+            font-size: 24px;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>キー生成ツール</h1>
+    <button id="generateButton">キーを生成</button>
+    <div id="key"></div>
+
+    <script>
+        document.getElementById('generateButton').addEventListener('click', function() {
+            if (!localStorage.getItem('myKey')) {
+                var key = generateKey(10);
+                localStorage.setItem('myKey', key);
+                document.getElementById('key').innerText = '生成されたキー: ' + key;
+                sendKeyToServer(key);
+            } else {
+                alert('キーは既に生成されています。');
+            }
+        });
+
+        function generateKey(length) {
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var charactersLength = characters.length;
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result;
+        }
+
+        function sendKeyToServer(key) {
+            fetch('https://ipinfo.io/json')
+                .then(response => response.json())
+                .then(data => {
+                    var ip = data.ip;
+                    fetch('save_key.php', {
+                        method: 'POST',
+                        body: JSON.stringify({ key: key, ip: ip }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }).catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
